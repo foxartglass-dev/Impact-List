@@ -1,0 +1,5 @@
+{
+  "name": "ImpactList: AI Action Plan Generator",
+  "description": "An application to import content from various sources (text, files), generate an AI-powered list of actionable items, prioritize them on a Kanban board, and get contextual coaching from an AI assistant for each task.",
+  "requestFramePermissions": []
+}
