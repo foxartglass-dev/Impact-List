@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { ActionItem, Status } from '../types';
 import ActionItemCard from './ActionItemCard';
@@ -47,11 +46,13 @@ const KanbanColumn: React.FC<KanbanColumnProps> = ({ status, items, onUpdateItem
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
       className={`flex flex-col rounded-lg h-full overflow-hidden transition-all duration-300 ${style.bg} ${isOver ? `ring-2 ${style.border}` : ''}`}
+      aria-label={`Kanban column for ${status} items`}
+      role="region"
     >
       <div className={`p-4 border-b-2 ${style.border}`}>
-        <h3 className={`text-lg font-bold ${style.title}`}>{status} ({items.length})</h3>
+        <h3 id={`column-header-${status}`} className={`text-lg font-bold ${style.title}`}>{status} ({items.length})</h3>
       </div>
-      <div className="flex-grow p-2 overflow-y-auto space-y-2">
+      <div className="flex-grow p-2 overflow-y-auto space-y-2" role="list" aria-labelledby={`column-header-${status}`}>
         {items.map(item => (
           <ActionItemCard
             key={item.id}

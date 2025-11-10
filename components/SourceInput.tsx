@@ -1,15 +1,23 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 interface SourceInputProps {
-  onGenerate: (sourceText: string, eventName: string) => void;
+  onGenerate: (sourceText: string, eventName: string, customPrompt?: string) => void;
   isLoading: boolean;
   error: string | null;
+  showPromptOverride?: boolean;
+  initialSourceText?: string;
+  initialEventName?: string;
 }
 
-const SourceInput: React.FC<SourceInputProps> = ({ onGenerate, isLoading, error }) => {
-  const [sourceText, setSourceText] = useState('');
-  const [eventName, setEventName] = useState('My AI Action Plan');
+const SourceInput: React.FC<SourceInputProps> = ({ onGenerate, isLoading, error, showPromptOverride = false, initialSourceText = '', initialEventName = 'My AI Action Plan' }) => {
+  const [sourceText, setSourceText] = useState(initialSourceText);
+  const [eventName, setEventName] = useState(initialEventName);
+  const [customPrompt, setCustomPrompt] = useState('');
+
+  useEffect(() => {
+    setSourceText(initialSourceText);
+    setEventName(initialEventName);
+  }, [initialSourceText, initialEventName]);
   
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -28,14 +36,16 @@ const SourceInput: React.FC<SourceInputProps> = ({ onGenerate, isLoading, error 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (sourceText.trim()) {
-      onGenerate(sourceText, eventName);
+      onGenerate(sourceText, eventName, customPrompt || undefined);
     }
   };
 
   return (
     <div className="w-full max-w-4xl mx-auto p-8 bg-gray-800 rounded-lg shadow-2xl flex flex-col items-center">
-      <h2 className="text-3xl font-bold text-cyan-400 mb-2">Create Your Action Plan</h2>
-      <p className="text-gray-400 mb-6 text-center">Paste your content, upload a file, or enter a YouTube URL (note: URL processing is simulated) to get started.</p>
+      <h2 className="text-3xl font-bold text-cyan-400 mb-2">{showPromptOverride ? 'Try Generation Again' : 'Create Your Action Plan'}</h2>
+      <p className="text-gray-400 mb-6 text-center">
+          {showPromptOverride ? "Generation failed or returned no items." : "Paste your content, upload a file, or enter a YouTube URL (note: URL processing requires manual transcript paste) to get started."}
+      </p>
       
       {error && (
         <div className="bg-red-900 border border-red-700 text-red-200 px-4 py-3 rounded-md relative w-full mb-4" role="alert">
@@ -69,10 +79,26 @@ const SourceInput: React.FC<SourceInputProps> = ({ onGenerate, isLoading, error 
             value={sourceText}
             onChange={(e) => setSourceText(e.target.value)}
             className="w-full bg-gray-700 border border-gray-600 text-white rounded-md p-3 h-64 resize-y focus:ring-cyan-500 focus:border-cyan-500"
-            placeholder="Paste your article, meeting notes, or video transcript here..."
+            placeholder="Paste your article, meeting notes, or video transcript here... If a YouTube transcript is unavailable, please paste it manually."
             required
           />
         </div>
+        
+        {showPromptOverride && (
+            <div>
+              <label htmlFor="customPrompt" className="block text-sm font-medium text-gray-300 mb-1">
+                Alternate Prompt (Optional)
+              </label>
+              <input
+                type="text"
+                id="customPrompt"
+                value={customPrompt}
+                onChange={(e) => setCustomPrompt(e.target.value)}
+                className="w-full bg-gray-700 border border-gray-600 text-white rounded-md p-3 focus:ring-cyan-500 focus:border-cyan-500"
+                placeholder="e.g., Extract only technical action items."
+              />
+            </div>
+        )}
 
         <div className="flex items-center justify-between gap-4">
             <div className="flex items-center">
@@ -92,7 +118,7 @@ const SourceInput: React.FC<SourceInputProps> = ({ onGenerate, isLoading, error 
                     <svg className="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
                     Generating...
                     </>
-                ) : 'Generate Action Plan'}
+                ) : showPromptOverride ? 'Try Again' : 'Generate Action Plan'}
             </button>
         </div>
       </form>
